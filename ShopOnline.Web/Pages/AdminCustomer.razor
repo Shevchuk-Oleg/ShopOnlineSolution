@@ -1,0 +1,61 @@
+﻿@page "/Customer1"
+@inject HttpClient http;
+
+<h3>AdminProducts</h3>
+
+<button class="btn btn-primary" @onclick="GetAdminProducts">GetAdminProducts</button>
+<p></p>
+<input class="form-control" @bind="customer.CustomerName" placeholder="CustomerName" />
+<p></p>
+<input class="form-control" @bind="customer.CustomerMobileNumber" placeholder="CustomerMobileNumber" />
+<p></p>
+<input class="form-control" @bind="customer.CustomerEmail" placeholder="CustomerEmail" />
+
+<p></p>
+<button class="btn btn-primary" @onclick="SaveProducts">Save</button>
+<br />
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>CustomerId</th>
+            <th>CustomerName</th>
+            <th>CustomerMobileNumber</th>
+            <th>CustomerEmail</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var Customer in @Customers)
+        {
+            <tr>
+                <td>@Customer.CustomerId</td>
+                <td>@Customer.CustomerName</td>
+                <td>@Customer.CustomerMobileNumber</td>
+                <td>@Customer.CustomerEmail</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    Customer customer = new Customer();
+    List<Customer> Customers = new List<Customer>();
+
+    private async Task GetAdminProducts()
+    {
+        Customers = await http.GetFromJsonAsync<List<Customer>>("https://localhost:7015/api/customer");
+    }
+
+    private async Task SaveProducts()
+    {
+        await http.PostAsJsonAsync<Customer>("https://localhost:7015/api/customer", customer);
+    }
+
+    public class Customer
+    {
+        public int CustomerId { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerMobileNumber { get; set; }
+        public string CustomerEmail { get; set; }
+    }
+}

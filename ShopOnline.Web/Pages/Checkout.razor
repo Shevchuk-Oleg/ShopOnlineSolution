@@ -1,0 +1,199 @@
+﻿@page "/Checkout"
+@inherits CheckoutBase
+@inject HttpClient http;
+
+<h3 class="mb-5">Checkout</h3>
+
+@*<button class="btn btn-primary" @onclick="GetAdminProducts">GetAdminProducts</button>
+<p></p>
+<input class="form-control" @bind="customer.CustomerName" placeholder="CustomerName" />
+<p></p>
+<input class="form-control" @bind="customer.CustomerMobileNumber" placeholder="CustomerMobileNumber" />
+<p></p>
+<input class="form-control" @bind="customer.CustomerEmail" placeholder="CustomerEmail" />
+
+<p></p>*@
+
+@*<br />
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>CustomerId</th>
+            <th>CustomerName</th>
+            <th>CustomerEmail</th>
+            <th>CustomerMobileNumber</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var Customer in @Customers)
+        {
+            <tr>
+                <td>@Customer.CustomerId</td>
+                <td>@Customer.CustomerName</td>
+                <td>@Customer.CustomerEmail</td>
+                <td>@Customer.CustomerMobileNumber</td>
+            </tr>
+        }
+    </tbody>
+</table>*@
+
+<div class="row">
+    <div class="col-md-6"  >
+        <h4 class="mb-2">Please fill out the form below</h4>
+        @*<button class="btn btn-primary" @onclick="GetAdminProducts">GetAdminProducts</button>*@
+        <p></p>
+        <input class="form-control" @bind="customer.CustomerName" placeholder="Name" />
+        <p></p>
+        <input class="form-control" @bind="customer.CustomerMobileNumber" placeholder="MobileNumber" />
+        <p></p>
+        <input class="form-control" @bind="customer.CustomerEmail" placeholder="Delivery" />
+
+        <p></p>
+        <button class="btn btn-primary" @onclick="SaveProducts">Save</button>
+        <br />
+
+        @if (check == true)
+        {
+            check = false;
+            int k = 0;
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Delivery</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var NewCustomer in Customers)
+                    {
+                       
+                        k++;
+                        if (k == (Customers.Count))
+                        {
+                            <tr>
+                                <td>@NewCustomer.CustomerId</td>
+                                <td>@NewCustomer.CustomerName</td>
+                                <td>@NewCustomer.CustomerEmail</td>
+                                <td>@NewCustomer.CustomerMobileNumber</td>
+                                <td>
+                                    <a class="btn btn-danger editBtn" @onclick="(()=>DeleteProducts(NewCustomer.CustomerId))">Delete</a>
+                                </td>
+
+                            </tr>
+                        }
+                        @*@for (var i = 0; i < Customers.Count; i++)
+                        {
+                            if (i == (Customers.Count - 1))
+                            {
+                                <tr>
+                                    <td>@Customers[i].CustomerId</td>
+                                    <td>@Customers[i].CustomerName</td>
+                                    <td>@Customers[i].CustomerEmail</td>
+                                    <td>@Customers[i].CustomerMobileNumber</td>
+                                    <td>
+                                        <a class="btn btn-danger editBtn" @onclick="(()=>DeleteProducts(NewCustomer.CustomerId))">Delete</a>
+                                    </td>
+
+                                </tr>
+                                break;
+                            }
+                            
+                        }
+                        break;*@
+                        
+
+                    }
+                </tbody>
+            </table>
+        }
+        @*<h4 class="mb-2">Please fill out the form below</h4>
+        <p></p>
+        <div class="form-outline">
+            <input class="form-control" @bind="customer.CustomerName" @placeholder="Name"/>
+        </div>
+        <p></p>
+        <div class="form-outline">
+            <input class="form-control" @bind="customer.CustomerEmail" placeholder="Email" />
+        </div>
+        <p></p>
+        <div class="form-outline">
+            <input class="form-control" @bind="customer.CustomerMobileNumber" placeholder="Phone number" />
+        </div>
+        <p></p>
+        <div class="form-outline">
+            <input type="text" id="form12" class="form-control" placeholder="Delivery details" />
+        </div>
+        <button class="btn btn-primary" @onclick="Save">Save details</button>*@
+    </div>
+</div>
+
+        <div class="col-md-6">
+            <h4 class="mb-2">Payment Summary</h4>
+            @if (ShoppingCartItems.Count() > 0)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var item in ShoppingCartItems)
+                        {
+                            <tr>
+                                <td>@item.Qty x @item.ProductName</td>
+                                <td>@item.TotalPrice.ToString("C")</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td><b>Total</b></td>
+                            <td><b>@PaymentAmount.ToString("C")</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+        </div>
+
+
+
+@code {
+    Customer customer = new Customer();
+    List<Customer> Customers = new List<Customer>();
+    bool check = false;
+
+    private async Task GetAdminProducts()
+    {
+        Customers = await http.GetFromJsonAsync<List<Customer>>("https://localhost:7015/api/customer");
+    }
+
+    private async Task SaveProducts()
+    {
+        await http.PostAsJsonAsync<Customer>("https://localhost:7015/api/customer", customer);
+        await GetAdminProducts();
+        check = true;
+    }
+
+    private async Task DeleteProducts(int productID)
+    {
+        var res = await http.DeleteAsync($"https://localhost:7015/api/customer/{productID}");
+        Customers.RemoveAll(x => x.CustomerId == customer.CustomerId);
+    }
+
+    private void SetProduct(Customer ocustomer)
+    {
+        customer = ocustomer;
+    }
+
+    public class Customer
+    {
+        public int CustomerId { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerMobileNumber { get; set; }
+        public string CustomerEmail { get; set; }
+    }
+}

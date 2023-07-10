@@ -1,0 +1,100 @@
+﻿@page "/developerProducts"
+@inject HttpClient http;
+
+<h3>AdminProducts</h3>
+
+<button class="btn btn-primary" @onclick="GetAdminProducts">GetAdminProducts</button>
+<p></p>
+<input id ="input1" class="form-control" @bind="product.Name" placeholder="Name" />
+<p></p>
+<input class="form-control" @bind="product.Description" placeholder="Description" />
+<p></p>
+<input class="form-control" @bind="product.ImageURL" placeholder="ImageURL" />
+<p></p>
+<input class="form-control" @bind="product.Price" placeholder="Price" />
+<p></p>
+<input class="form-control" @bind="product.Qty" placeholder="Qty" />
+<p></p>
+<input class="form-control" @bind="product.CategoryId" placeholder="CategoryId" />
+<p></p>
+
+<button class="btn btn-primary" @onclick="SaveProducts">Save</button>
+<button class="btn btn-primary" @onclick="EditProducts">Edit</button>
+<br/>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>ImageURL</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>CategoryId</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var Product in @Products)
+        {
+            <tr>
+                <td>@Product.Id</td>
+                <td>@Product.Name</td>
+                <td>@Product.Description</td>
+                <td>@Product.ImageURL</td>
+                <td>@Product.Price</td>
+                <td>@Product.Qty</td>
+                <td>@Product.CategoryId</td>
+                <td>
+                    <button class="btn btn-success editBtn" @onclick="(()=>SetProduct(Product))">Edit</button>
+                    <a class="btn btn-danger editBtn" @onclick="(()=>DeleteProducts(Product.Id))">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    Product product = new Product();
+    List<Product> Products = new List<Product>();
+
+    private async Task GetAdminProducts()
+    {
+        Products = await http.GetFromJsonAsync<List<Product>>("https://localhost:7159/api/product");
+    }
+
+    private async Task SaveProducts()
+    {
+        await http.PostAsJsonAsync<Product>("https://localhost:7159/api/product", product);
+    }
+
+    private async Task EditProducts()
+    {
+        await http.PutAsJsonAsync<Product>("https://localhost:7159/api/product/{product.Id}", product);
+    }
+
+    
+
+    private async Task DeleteProducts(int productID)
+    {
+        var res = await http.DeleteAsync($"https://localhost:7159/api/product/{productID}");
+        Products.RemoveAll(x => x.Id == product.Id);
+    }
+
+    private void SetProduct(Product oproduct)
+    {
+        product = oproduct;
+    }
+
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string ImageURL { get; set; }
+        public decimal Price { get; set; }
+        public int Qty { get; set; }
+        public int CategoryId { get; set; }
+    }  
+}
